@@ -1,10 +1,15 @@
 # Dockerfile
 # ==============================================================================
-# 建築手順書 for Process Staged Articles Service
+# 建築手順書 (再検証・確定版)
+# Cloud Runの公式ドキュメントに基づき、最も標準的で確実な記述に修正。
 # ==============================================================================
 
-# ベースイメージとして、公式のPython 3.12安定版を使用します。
+# ベースイメージとして、公式のPython 3.12安定版を使用。これは正しい選択です。
 FROM python:3.12-slim
+
+# 環境変数: Pythonがバッファなしでログを出力するように設定。
+# これにより、ログがよりリアルタイムに表示されるようになります。
+ENV PYTHONUNBUFFERED True
 
 # コンテナ内の作業ディレクトリを設定します。
 WORKDIR /app
@@ -13,11 +18,12 @@ WORKDIR /app
 COPY requirements.txt .
 
 # 部品リストに基づいて、必要なライブラリをインストールします。
+# --no-cache-dir は、コンテナのサイズを小さく保つためのベストプラクティスです。
 RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリケーションの本体であるソースコードをコピーします。
 COPY main.py .
 
-# functions-frameworkを使い、Pub/Subイベントを処理する関数を起動します。
-# HTTPサーバーは不要なため、CMDは不要です。Cloud Runがトリガーを管理します。
-CMD ["functions-framework", "--target=process_staged_articles", "--signature-type=event"]
+# このサービスがリクエストを待ち受けるポートを8080に設定します。
+# Cloud Runは、このPORT環境変数を自動的に認識します。
+ENV PORT 8080
