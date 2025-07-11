@@ -1,22 +1,26 @@
+# ==============================================================================
+# Memory Library - Process Staged Articles Service
 # Dockerfile
 # ==============================================================================
-# 建築手順書 (シンプルテスト版)
-# ==============================================================================
 
-# ベースイメージとして、公式のPython 3.12安定版を使用します。
+# ベースイメージとして公式のPython 3.12スリム版を使用
 FROM python:3.12-slim
 
-# コンテナ内の作業ディレクトリを設定します。
-WORKDIR /app
+# 環境変数
+ENV PYTHONUNBUFFERED True
+ENV APP_HOME /app
+ENV PORT 8080
 
-# まず、依存関係ファイル(部品リスト)をコピーします。
+# 作業ディレクトリを作成して設定
+WORKDIR $APP_HOME
+
+# 要件ファイルをコピーしてインストール
 COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip -r requirements.txt
 
-# 部品リストに基づいて、必要なライブラリをインストールします。
-RUN pip install --no-cache-dir -r requirements.txt
-
-# アプリケーションの本体であるソースコードをコピーします。
+# アプリケーションのソースコードをコピー
 COPY main.py .
 
-# functions-frameworkを使って、Pub/Subイベントを処理する関数を起動します。
-CMD ["functions-framework", "--target=process_staged_articles", "--signature-type=event"]
+# コンテナ起動時に実行するコマンドを設定
+# GunicornをWebサーバーとして使用し、main.py内の'app'オブジェクトを実行
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app"]
