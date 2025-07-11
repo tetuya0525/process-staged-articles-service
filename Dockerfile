@@ -20,4 +20,3 @@ COPY main.py .
 
 # functions-frameworkを使って、Pub/Subイベントを処理する関数を起動します。
 CMD ["functions-framework", "--target=process_staged_articles", "--signature-type=event"]
-
