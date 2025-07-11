@@ -27,3 +27,9 @@ COPY main.py .
 # このサービスがリクエストを待ち受けるポートを8080に設定します。
 # Cloud Runは、このPORT環境変数を自動的に認識します。
 ENV PORT 8080
+
+# ★★★【最重要・再検証】エントリポイント ★★★
+# functions-frameworkではなく、より汎用的で確実なgunicornを起動コマンドとして採用します。
+# これにより、フレームワーク固有の起動問題を完全に排除します。
+# main:app は、「main.py」ファイルの中にある「app」という名前のFlaskアプリケーションを起動せよ、という意味です。
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 main:app
